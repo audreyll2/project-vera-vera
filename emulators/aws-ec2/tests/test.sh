@@ -17,14 +17,17 @@ awscli ec2 create-dhcp-options --dhcp-configuration "Key=domain-name-servers,Val
 awscli ec2 create-fpga-image --name my-afi --description test-afi --input-storage-location Bucket=my-fpga-bucket,Key=dcp/17_12_22-103226.Developer_CL.tar --logs-storage-location Bucket=my-fpga-bucket,Key=logs
 awscli ec2 create-instance-event-window --region us-east-1 --time-range StartWeekDay=monday,StartHour=2,EndWeekDay=wednesday,EndHour=8 --tag-specifications "ResourceType=instance-event-window,Tags=[{Key=K1,Value=V1}]" --name myEventWindowName
 awscli ec2 create-instance-event-window --region us-east-1 --cron-expression "* 21-23 * * 2,3" --tag-specifications "ResourceType=instance-event-window,Tags=[{Key=K1,Value=V1}]" --name myEventWindowName
+awscli ec2 create-internet-gateway
 awscli ec2 create-internet-gateway --tag-specifications ResourceType=internet-gateway,Tags=[{Key=Name,Value=my-igw}]
 awscli ec2 create-ipam-resource-discovery --description 'Example-resource-discovery' --tag-specifications 'ResourceType=ipam-resource-discovery,Tags=[{Key=cost-center,Value=cc123}]' --operating-regions RegionName='us-west-1' RegionName='us-west-2' --region us-east-1
 awscli ec2 create-ipam --description "Example description" --operating-regions "RegionName=us-east-2" "RegionName=us-west-1" --tag-specifications 'ResourceType=ipam,Tags=[{Key=Name,Value=ExampleIPAM}]'
 awscli ec2 create-ipam --description "Example description" --operating-regions "RegionName=us-east-2" "RegionName=us-west-1" --tag-specifications ResourceType=ipam,Tags=[{Key=Name,Value=ExampleIPAM}]
-awscli ec2 create-key-pair --key-name MyKeyPair
+awscli ec2 create-key-pair --key-name MyKeyPair --query "KeyMaterial" --output text > MyKeyPair.pem
+awscli ec2 create-key-pair --key-name MyKeyPair --key-type ed25519
 awscli ec2 create-launch-template --launch-template-name TemplateForWebServer --version-description WebVersion1 --launch-template-data '{"NetworkInterfaces":[{"AssociatePublicIpAddress":true,"DeviceIndex":0,"Ipv6AddressCount":1,"SubnetId":"subnet-7b16de0c"}],"ImageId":"ami-8c1be5f6","InstanceType":"t2.small","TagSpecifications":[{"ResourceType":"instance","Tags":[{"Key":"purpose","Value":"webserver"}]}]}'
 awscli ec2 create-launch-template --launch-template-name TemplateForAutoScaling --version-description AutoScalingVersion1 --launch-template-data '{"NetworkInterfaces":[{"DeviceIndex":0,"AssociatePublicIpAddress":true,"Groups":["sg-7c227019,sg-903004f8"],"DeleteOnTermination":true}],"ImageId":"ami-b42209de","InstanceType":"m4.large","TagSpecifications":[{"ResourceType":"instance","Tags":[{"Key":"environment","Value":"production"},{"Key":"purpose","Value":"webserver"}]},{"ResourceType":"volume","Tags":[{"Key":"environment","Value":"production"},{"Key":"cost-center","Value":"cc123"}]}],"BlockDeviceMappings":[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":100}}]}' --region us-east-1
 awscli ec2 create-managed-prefix-list --address-family IPv4 --max-entries 10 --entries Cidr=10.0.0.0/16,Description=vpc-a Cidr=10.2.0.0/16,Description=vpc-b --prefix-list-name vpc-cidrs
+awscli ec2 create-managed-prefix-list --address-family IPv6 --max-entries 5 --entries Cidr=2001:db8::/32,Description=ipv6-range-a Cidr=2001:db8:1::/48,Description=ipv6-range-b --prefix-list-name ipv6-cidrs
 awscli ec2 create-network-insights-path --source igw-0797cccdc9d73b0e5 --destination i-0495d385ad28331c7 --destination-port 22 --protocol TCP
 awscli ec2 create-placement-group --group-name my-cluster --strategy cluster
 awscli ec2 create-placement-group --group-name HDFS-Group-A --strategy partition --partition-count 5

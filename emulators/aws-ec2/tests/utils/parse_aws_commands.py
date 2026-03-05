@@ -121,14 +121,44 @@ def parse_aws_commands(file_path):
     
     return commands
 
+def parse_aws_commands_from_directory(directory: Path, quiet: bool = True) -> dict[str, list[dict]]:
+    """Parse all RST files in a directory and return the total number of commands and the results."""
+    results = {}
+    if not directory.exists():
+        if not quiet:
+            print(f"Directory not found: {directory}")
+        return results
+
+    # Find all RST files in directory
+    rst_files = sorted(directory.rglob("*.rst"))
+    
+    if not quiet:
+        print(f"Found {len(rst_files)} RST files")
+        print("Parsing commands...")
+    
+    total_commands = 0
+    for rst_file in rst_files:
+        commands = parse_aws_commands(rst_file)
+        
+        if commands:
+            # Use relative path as key
+            rel_path = str(rst_file.relative_to(directory))
+            results[rel_path] = commands    
+            total_commands += len(commands)
+
+    if not quiet:
+        print(f"Total commands found: {total_commands}")
+    return results
+
 
 def main():
     """Parse all RST files and save AWS commands to JSON."""
-    # Find all RST files in tests directory
-    tests_dir = Path(__file__).parent / "tests"
+    # Find all RST files in cli directory
+    # Script is in utils/, so go up one level to tests/ then look for cli/
+    tests_dir = Path(__file__).parent.parent / "cli"
     
     if not tests_dir.exists():
-        print(f"Tests directory not found: {tests_dir}")
+        print(f"CLI directory not found: {tests_dir}")
         return
     
     rst_files = sorted(tests_dir.rglob("*.rst"))
@@ -145,18 +175,18 @@ def main():
         
         if commands:
             # Use relative path as key
-            rel_path = str(rst_file.relative_to(tests_dir.parent))
+            rel_path = str(rst_file.relative_to(tests_dir))
             results[rel_path] = commands
             total_commands += len(commands)
     
     # Save to JSON file
-    output_file = Path(__file__).parent / "aws_commands.json"
+    output_file = Path(__file__).parent.parent / "aws_commands.json"
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
     
     print(f"\n{'=' * 80}")
     print(f"Total AWS commands found: {total_commands}")
-    print(f"Files with commands: {len(results)}")
+    print(f"Files with commands after filtering: {len(results)}")
     print(f"Results saved to: {output_file}")
     print(f"{'=' * 80}")
 

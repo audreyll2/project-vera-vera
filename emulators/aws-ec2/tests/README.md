@@ -1,60 +1,118 @@
-# LocalStack CLI Tests
+# AWS EC2 CLI Tests
 
-This directory contains tests for LocalStack.
+This directory contains automated tests for AWS EC2 CLI commands, supporting both:
+- **EC2 Emulator** (custom implementation)
+- **LocalStack** (AWS cloud emulator)
 
-## Usage
+## Quick Start
 
-By default, we filtered out commands that use ID parameters and file parameters.
+### Generate Test Commands
+
+The test commands are automatically extracted from AWS CLI documentation (RST files in `cli/` directory).
 
 ```bash
-python print_commands_with_endpoint.py --endpoint http://localhost:4566 > test.sh
+# For EC2 Emulator (uses awscli wrapper)
+python print_commands_with_endpoint.py > test.sh
+
+# For LocalStack (adds --endpoint-url)
+python print_commands_with_endpoint.py --ls > test_ls.sh
+
+# Include commands with ID parameters
+python print_commands_with_endpoint.py --include-id > test.sh
+
+# Include all commands (with ID and file parameters)
+python print_commands_with_endpoint.py --include-id --include-file > test_full.sh
+
+# Custom LocalStack endpoint
+python print_commands_with_endpoint.py --ls --endpoint http://localhost:8080 > test.sh
 ```
 
-Start LocalStack
+**Default filtering:** Commands requiring resource IDs or file paths are excluded (260/901 commands).
 
-```bash
-localstack start
+## Running Tests
+
+### Test Against EC2 Emulator
+
+1. **Start the emulator:**
+   ```bash
+   # Start emulator on port 5003
+   uv run main.py
+   ```
+
+2. **Generate and run tests:**
+   ```bash
+   python print_commands_with_endpoint.py > test.sh
+
+   # under aws-ec2/
+   source .venv/bin/activate 
+   python eval_emulator.py test.sh
+   ```
+
+3. **Resume from checkpoint:**
+   ```bash
+   # Resume from command index 100
+   python eval_emulator.py test.sh --start-from 100
+   ```
+
+### Test Against LocalStack
+
+1. **Start LocalStack:**
+   ```bash
+   localstack start
+   ```
+
+2. **Generate and run tests:**
+   ```bash
+   python print_commands_with_endpoint.py --ls > test_ls.sh
+   python eval_ls.py test_ls.sh
+   ```
+
+**Note:** `eval_ls.py` restarts LocalStack before each command to ensure clean state.
+
+**Output example:**
 ```
-
-Run the evaluation script
-
-```bash
-python eval_ls.py test.sh
-
-...
 ================================================================================
 Command 249/260
 ================================================================================
-Command: aws --endpoint-url=http://localhost:4566 ec2 register-image --name my-image --image-location amzn-s3...
+Command: aws --endpoint-url=http://localhost:4566 ec2 register-image --name my-image...
   → Restarting LocalStack...
   → Waiting for LocalStack to be ready...
   → Running command...
   ✓ Success (exit code: 0)
   → Saving checkpoint...
-
-================================================================================
-Command 250/260
-================================================================================
-Command: aws --endpoint-url=http://localhost:4566 ec2 register-image --name my-image --root-device-name /dev/...
-  → Restarting LocalStack...
-  → Waiting for LocalStack to be ready...
-  → Running command...
-  ✓ Success (exit code: 0)
-  → Saving checkpoint...
-...
 ```
 
-## Results
+## Results & Analysis
 
-The results are saved in the `eval_results.json` file.
+Results are saved in JSON format with checkpoints after each command.
 
+**View results:**
 ```bash
-python analyze_results.py eval_results.json
+# Emulator results
+cat eval_results_emulator.json
+
+# LocalStack results  
+cat eval_results.json
+
+# Analyze results
+python analyze_results.py eval_results_emulator.json
+```
+
+**Summary:**
+```
+================================================================================
+LocalStack: EVALUATION COMPLETE
+================================================================================
+Total commands: 260
+Successful: 122 (46.9%)
+Failed: 138 (53.1%)
+Total runtime: 1947.95s (32.47 minutes)
 
 ================================================================================
-EVALUATION COMPLETE
+Emulator: EVALUATION COMPLETE
 ================================================================================
 Total commands: 263
-Successful: 121 (46.0%)
-...
+Successful: 210 (79.8%)
+Failed: 53 (20.2%)
+Total runtime: 248.92s (4.15 minutes)
 ```

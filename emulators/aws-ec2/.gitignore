@@ -10,5 +10,7 @@ _vera_override.tf
 .bin/
 vera_aws.egg-info/
 eval_results*.json
+*eval_results*.json
 eval_test*.json
 attributes.json
+*.pem

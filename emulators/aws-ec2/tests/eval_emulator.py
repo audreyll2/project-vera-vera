@@ -126,6 +126,7 @@ def run_evaluation(script_file, checkpoint_file='eval_results_emulator.json',
     print("✓ Emulator is healthy\n")
     
     # Load existing results if resuming
+    start_time = time.time()
     results = {
         'script_file': str(script_file),
         'endpoint_url': endpoint_url,
@@ -138,6 +139,10 @@ def run_evaluation(script_file, checkpoint_file='eval_results_emulator.json',
         print(f"Resuming from command index {start_from}...")
         with open(checkpoint_file, 'r', encoding='utf-8') as f:
             results = json.load(f)
+        # Preserve original start time if resuming
+        if 'started_at' in results:
+            start_time_str = results['started_at']
+            start_time = datetime.fromisoformat(start_time_str).timestamp()
     
     # Main evaluation loop
     for idx in range(start_from, len(commands)):
@@ -218,6 +223,10 @@ def run_evaluation(script_file, checkpoint_file='eval_results_emulator.json',
         print(f"  → Saving checkpoint...", flush=True)
         save_checkpoint(results, checkpoint_file)
     
+    # Calculate total runtime
+    end_time = time.time()
+    total_runtime = end_time - start_time
+    
     # Final summary
     print(f"\n\n{'='*80}")
     print("EVALUATION COMPLETE")
@@ -235,14 +244,17 @@ def run_evaluation(script_file, checkpoint_file='eval_results_emulator.json',
     print(f"Failed: {failed} ({failed/total*100:.1f}%)")
     if skipped > 0:
         print(f"Skipped: {skipped}")
+    print(f"Total runtime: {total_runtime:.2f}s ({total_runtime/60:.2f} minutes)")
     print(f"\nResults saved to: {checkpoint_file}")
     
     results['completed_at'] = datetime.now().isoformat()
+    results['total_runtime_seconds'] = round(total_runtime, 2)
     results['summary'] = {
         'total': total,
         'successful': successful,
         'failed': failed,
-        'skipped': skipped
+        'skipped': skipped,
+        'total_runtime_seconds': round(total_runtime, 2)
     }
     save_checkpoint(results, checkpoint_file)
 

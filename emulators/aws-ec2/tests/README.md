@@ -101,12 +101,18 @@ python analyze_results.py eval_results_emulator.json
 **Summary:**
 ```
 ================================================================================
-EVALUATION COMPLETE
+LocalStack: EVALUATION COMPLETE
 ================================================================================
 Total commands: 260
-Successful: 207 (79.6%)
-Failed: 53 (20.4%)
-Total runtime: 247.08s (4.12 minutes)
+Successful: 122 (46.9%)
+Failed: 138 (53.1%)
+Total runtime: 1947.95s (32.47 minutes)
 
-Results saved to: eval_results_emulator.json
+================================================================================
+Emulator: EVALUATION COMPLETE
+================================================================================
+Total commands: 263
+Successful: 210 (79.8%)
+Failed: 53 (20.2%)
+Total runtime: 248.92s (4.15 minutes)
 ```

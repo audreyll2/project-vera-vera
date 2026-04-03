@@ -56,16 +56,23 @@ def run(cmd: List[str], cwd: Path, env: Dict[str, str], timeout_s: int) -> Tuple
     return proc.returncode, proc.stdout, proc.stderr
 
 
+def _is_terraform_config_file(p: Path) -> bool:
+    if not p.is_file():
+        return False
+    name = p.name
+    return name.endswith(".tf") or name.endswith(".tf.json")
+
+
 def discover_cases(tf_root: Path) -> List[str]:
     """
     Each sub dir under tf_root is treated as one Terraform testcase.
-    We include a dir if it contains at least one *.tf file.
+    We include a dir if it contains at least one *.tf / *.tf.json file (any depth).
     """
     cases: List[str] = []
     for child in sorted(tf_root.iterdir()):
         if not child.is_dir():
             continue
-        if any(p.is_file() and p.suffix in {".tf", ".tf.json"} for p in child.rglob("*.tf*")):
+        if any(_is_terraform_config_file(p) for p in child.rglob("*")):
             cases.append(child.name)
     return cases
 
